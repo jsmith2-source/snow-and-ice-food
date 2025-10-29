@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Snow Food</title>
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(to bottom, #b3e5fc, #e1f5fe);
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+  }
+
+  header {
+    text-align: center;
+    padding: 40px;
+    font-size: 3em;
+    font-weight: bold;
+    color: white;
+    text-shadow: 2px 2px 8px #0288d1;
+  }
+
+  #snow {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  section {
+    text-align: center;
+    padding: 80px 20px;
+  }
+
+  h2 {
+    color: #0277bd;
+    font-size: 2em;
+    margin-bottom: 20px;
+  }
+
+  .product-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 25px;
+  }
+
+  .product {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    padding: 20px;
+    width: 220px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .product.selected {
+    border: 3px solid #0288d1;
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(2,136,209,0.3);
+  }
+
+  .product h3 { color: #0288d1; }
+  .product p { color: #555; }
+
+  .deliver-btn {
+    margin-top: 40px;
+    background: #0288d1;
+    color: white;
+    border: none;
+    padding: 15px 25px;
+    font-size: 18px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  .deliver-btn:hover { background: #01579b; }
+
+  #delivery {
+    background: white;
+    border-radius: 20px;
+    margin: 60px auto;
+    padding: 40px;
+    max-width: 700px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  }
+
+  input {
+    width: 80%;
+    padding: 10px;
+    font-size: 16px;
+    margin: 15px 0;
+    border: 2px solid #81d4fa;
+    border-radius: 10px;
+  }
+
+  #status {
+    margin-top: 15px;
+    font-weight: bold;
+    color: #0277bd;
+  }
+
+  #phoneNumber {
+    display: none;
+    font-size: 1.2em;
+    color: #0277bd;
+    font-weight: bold;
+    margin-top: 20px;
+  }
+
+  #thankYouPopup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    background: white;
+    color: #0277bd;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+    padding: 30px;
+    font-size: 1.5em;
+    text-align: center;
+    z-index: 1000;
+    transition: transform 0.4s ease;
+  }
+  #thankYouPopup.show {
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  #mapHint {
+    display: none;
+    margin-top: 20px;
+    text-align: center;
+  }
+
+  #mapHint img {
+    max-width: 90%;
+    width: 600px;
+    border-radius: 15px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.3);
+    display: block;
+    margin: 0 auto;
+  }
+</style>
+</head>
+<body>
+
+<header>❄️ Snow Food ❄️</header>
+<div id="snow"></div>
+
+<section id="instock">
+  <h2>In Stock</h2>
+  <div class="product-list">
+    <div class="product" onclick="selectProduct(this)">
+      <h3>Crushed Ice</h3>
+      <p>Soft, fluffy, and perfect for play or cones!</p>
+    </div>
+    <div class="product" onclick="selectProduct(this)">
+      <h3>Strawberry Syrup</h3>
+      <p>Sweet, colorful, and delicious on snow treats.</p>
+    </div>
+    <div class="product" onclick="selectProduct(this)">
+      <h3>Honey Drizzle</h3>
+      <p>Golden, smooth, and perfect for your snow cups!</p>
+    </div>
+  </div>
+
+  <button class="deliver-btn" onclick="scrollToDelivery()">🚚 Deliver</button>
+</section>
+
+<section id="delivery">
+  <h2>Delivery</h2>
+  <p>Enter your name or delivery ID below, then press <b>Deliver</b>.</p>
+
+  <input type="text" id="nameInput" placeholder="Enter your name or delivery ID">
+  <br>
+  <button class="deliver-btn" onclick="confirmDelivery()">Deliver</button>
+
+  <div id="status"></div>
+
+  <div id="phoneNumber">
+    📞 Contact: +84 76 897 0822  
+    <p style="margin-top: 10px; color: #01579b; font-size: 1.1em;">
+      🗣️ Please tell our worker what you want.
+    </p>
+  </div>
+
+  <div id="mapHint">
+    <p style="font-size:1.5em; color:#01579b; font-weight:bold; margin-bottom:15px;">
+      📍 Go where the star is!
+    </p>
+    <img src="C:\Users\jlss2\OneDrive\Pictures\Screenshots\Screenshot 2025-10-28 163318.png">
+  </div>
+</section>
+
+<div id="thankYouPopup">🎉 Thank you for your order!<br>We’ll be ready for you soon!</div>
+
+<script>
+  // ❄ Snow effect
+  const snowContainer = document.getElementById("snow");
+  function createSnowflake() {
+    const snowflake = document.createElement("div");
+    snowflake.textContent = "❄";
+    snowflake.style.position = "absolute";
+    snowflake.style.fontSize = Math.random() * 10 + 10 + "px";
+    snowflake.style.left = Math.random() * window.innerWidth + "px";
+    snowflake.style.top = "-20px";
+    snowflake.style.opacity = Math.random();
+    snowflake.style.animation = "fall " + (Math.random() * 5 + 5) + "s linear";
+    snowContainer.appendChild(snowflake);
+    setTimeout(() => snowflake.remove(), 10000);
+  }
+  setInterval(createSnowflake, 200);
+  const style = document.createElement("style");
+  style.textContent = `@keyframes fall { to { transform: translateY(${window.innerHeight + 100}px); } }`;
+  document.head.appendChild(style);
+
+  // Product selection
+  let selectedProduct = null;
+  function selectProduct(el) {
+    document.querySelectorAll(".product").forEach(p => p.classList.remove("selected"));
+    el.classList.add("selected");
+    selectedProduct = el.querySelector("h3").textContent;
+  }
+
+  function scrollToDelivery() {
+    if (!selectedProduct) {
+      alert("Please select at least one item before delivering!");
+      return;
+    }
+    document.getElementById('delivery').scrollIntoView({behavior: 'smooth'});
+  }
+
+  // Delivery confirmation
+  function confirmDelivery() {
+    const name = document.getElementById("nameInput").value.trim();
+    const status = document.getElementById("status");
+    const phoneNumber = document.getElementById("phoneNumber");
+    const mapHint = document.getElementById("mapHint");
+    const popup = document.getElementById("thankYouPopup");
+
+    if (!selectedProduct) {
+      status.textContent = "❗ Please select an item first!";
+      status.style.color = "red";
+      return;
+    }
+    if (!name) {
+      status.textContent = "❗ Please enter your name or ID first!";
+      status.style.color = "red";
+      return;
+    }
+
+    popup.classList.add("show");
+    setTimeout(() => popup.classList.remove("show"), 3000);
+
+    status.style.color = "#0277bd";
+    status.innerHTML = `✅ Thank you, <b>${name}</b>!<br>Item: <b>${selectedProduct}</b><br>Our worker will be ready for you.`;
+    phoneNumber.style.display = "block";
+    mapHint.style.display = "block";
+  }
+</script>
+
+</body>
+</html>
